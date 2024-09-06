@@ -35,7 +35,7 @@ Notebooks:
 * *train_model*: Train ML model to predict G by G_0 
 
 
-<img src="pics/sample.pdf" alt="sample.pdf" width="200"/>
+<img src="pics/sample.png" alt="sample.png" width="200"/>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
