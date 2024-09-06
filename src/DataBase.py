@@ -20,6 +20,7 @@ import torch
 import torch.nn as nn
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 from ml_model import MLSolver    
+from band_generation import Band_generator
 
 
 class db_DMFT():
@@ -56,7 +57,7 @@ class db_DMFT():
 
         if params is not None:
             self.params= params
-            for smple in samples:
+            for smple in tqdm(samples):
                 smpl  = sample.fromdict(smple)
                 self.data_entries.append(smpl)
         else:
@@ -68,9 +69,12 @@ class db_DMFT():
 
             
     def fill_db(self):
+        bg = Band_generator()
+        bg.load_checkpoint('./models/AUTOmodel_v4')
 
-        for params in self.params:
-            smpl  = sample(beta=params['beta'], U=params['U'] )
+        for params in tqdm(self.params):
+            BS = 2.0*bg.getBS().flatten()
+            smpl  = sample(beta=params['beta'], U=params['U'], BS=BS )
             self.data_entries.append(smpl)
     
 
@@ -85,12 +89,12 @@ class db_DMFT():
         return sample
 
 
-    def solve_db(self,n_cycles=5000,
-                      length_cycle=200,
-                      n_warmup_cycles=10000, mp=True):
+    def solve_db(self,n_cycles=500,
+                      length_cycle=2000,
+                      n_warmup_cycles=10000, n_workers=1):
         
-        if mp:
-            n_workers = 8
+        if n_workers > 1:
+            
             with Manager() as manager:
                 # Convert data_entries to a list proxy object
                 data_entries = manager.list(self.data_entries)
@@ -119,6 +123,8 @@ class db_DMFT():
             self.smpls_list.append( smpl_dict)
 
         with HDFArchive(self.filename) as ar:
+                ar['beta'] = 0
+                ar['U'] = 0
                 ar['n_entries'] = self.n_entries
                 ar['filename'] = self.filename
                 ar["params"] = self.params
@@ -132,7 +138,7 @@ class db_DMFT():
             return cls(**datadict)
 
 
-    def init_ML(self, model_path='./model_v1'):
+    def init_ML(self, model_path='./models/model_v1'):
         self.MLmodel = MLSolver().to(device, torch.float32)
         self.MLmodel.load_checkpoint(checkpoint_path=model_path)
 
@@ -147,7 +153,7 @@ class db_DMFT():
                 
                 sample = self.data_entries[sample_num]
 
-                gl = np.real(sample.G0_legendre.data).flatten()
+                gl = np.real(sample.G0_l.data).flatten()
                 beta = self.params[sample_num]['beta']
                 U = self.params[sample_num]['U']
                 features = np.hstack([U, beta, gl])
@@ -190,9 +196,9 @@ class db_DMFT():
 
                     ntau = 500
                     taumesh = np.linspace(0, self.data_entries[sample_num].beta, ntau)
-                    G_imp_rebinned = self.data_entries[sample_num].Gtau.rebinning_tau(new_n_tau=ntau)
+                    G_imp_rebinned = self.data_entries[sample_num].G_tau.rebinning_tau(new_n_tau=ntau)
 
-                    axes[x, y].plot(self.data_entries[sample_num].taumesh, np.real(self.data_entries[sample_num].G0tau.data.flatten()),
+                    axes[x, y].plot(self.data_entries[sample_num].taumesh, np.real(self.data_entries[sample_num].G0_tau.data.flatten()),
                                     '--',color='b', label='Noninteracting GF')
                     axes[x, y].plot(taumesh, np.real(G_imp_rebinned.data.flatten()),'-',color='b', label='Interact. Exact')
                     axes[x, y].plot(taumesh, np.real(GtauML.data.flatten()),'-',color='r', label='Interact. ML')
@@ -257,9 +263,9 @@ class db_DMFT():
                     # ntau = len(self.data_entries[sample_num].Gtau.data.flatten())
                     ntau = 500
                     taumesh = np.linspace(0, self.data_entries[sample_num].beta, ntau)
-                    G_imp_rebinned = self.data_entries[sample_num].Gtau.rebinning_tau(new_n_tau=ntau)
+                    G_imp_rebinned = self.data_entries[sample_num].G_tau.rebinning_tau(new_n_tau=ntau)
 
-                    axes[x, y].plot(self.data_entries[sample_num].taumesh, np.real(self.data_entries[sample_num].G0tau.data.flatten()),'--',color='b', label='NI')
+                    axes[x, y].plot(self.data_entries[sample_num].taumesh, np.real(self.data_entries[sample_num].G0_tau.data.flatten()),'--',color='b', label='NI')
                     axes[x, y].plot(taumesh, np.real(G_imp_rebinned.data.flatten()),'-',color='b', label='I')
                     axes[x, y].set_title(f'U={self.params[sample_num]['U']:.2f} beta={self.params[sample_num]['beta']:.2f}')
 
