@@ -24,6 +24,7 @@ One can build a database of Green's functions, train different models and use th
   ```sh
   pip install triqs-maxent
   ```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
  
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -34,9 +35,9 @@ Notebooks:
 * *train_model*: Train ML model to predict G by G_0 
 
 
-<img src="pics/spinDOS.png" alt="spinDOS_pic" width="200"/>
-<img src="pics/spinBS.png" alt="spinBS_pic" width="200"/>
+<img src="pics/sample.pdf" alt="sample.pdf" width="200"/>
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTACT -->
 ## Contact
