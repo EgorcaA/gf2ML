@@ -145,7 +145,8 @@ class db_DMFT():
 
     def plot_ML_solutions(self, numV=1, numH=1, what='dens'):
         
-        fig, axes = plt.subplots(numV, numH, figsize=(2.5*numH, 1.5*numV))
+        # fig, axes = plt.subplots(numV, numH, figsize=(2.5*numH, 1.5*numV))
+        fig, axes = plt.subplots(numV, numH, figsize=(5, 5))
 
         sample_num = 0
         for x in range(numV):
@@ -198,20 +199,22 @@ class db_DMFT():
                     taumesh = np.linspace(0, self.data_entries[sample_num].beta, ntau)
                     G_imp_rebinned = self.data_entries[sample_num].G_tau.rebinning_tau(new_n_tau=ntau)
 
+                    axes[x, y].plot(taumesh, np.real(G_imp_rebinned.data.flatten()),'-',color='orange', label=r'$G(\tau)$')
                     axes[x, y].plot(self.data_entries[sample_num].taumesh, np.real(self.data_entries[sample_num].G0_tau.data.flatten()),
-                                    '--',color='b', label='Noninteracting GF')
-                    axes[x, y].plot(taumesh, np.real(G_imp_rebinned.data.flatten()),'-',color='b', label='Interact. Exact')
-                    axes[x, y].plot(taumesh, np.real(GtauML.data.flatten()),'-',color='r', label='Interact. ML')
+                                    '--',color='b', label=r'$G_0(\tau)$')
+                    axes[x, y].plot(taumesh, np.real(GtauML.data.flatten()),'-',color='r', label=r'$G_{ML}(\tau)$')
 
-
-                    axes[x, y].set_title(f'U={self.params[sample_num]['U']:.2f} beta={self.params[sample_num]['beta']:.2f}')
+                    axes[x, y].set_title(rf'$U$={self.params[sample_num]['U']:.2f} $\beta$={self.params[sample_num]['beta']:.2f}',
+                                          fontsize=10)
+                    axes[x, y].set_xlim((0, self.data_entries[sample_num].beta))
                 
                 axes[x, y].xaxis.set_ticklabels([])
                 axes[x, y].yaxis.set_ticklabels([])
-                if sample_num==0:
-                    axes[x, y].legend()
-                # axes[x, y].set_ylabel('G')
-
+                plt.xticks([])
+                plt.yticks([])
+                # if sample_num==0:
+                #     axes[x, y].legend()
+                
                 sample_num += 1
 
         fig.tight_layout()
@@ -222,7 +225,7 @@ class db_DMFT():
         # fig.set_label('Gw')
         # plt.legend()
         # plt.xlim(-10, 10)
-        # plt.savefig('./Green_up.png', dpi=200, bbox_inches='tight')
+        plt.savefig('./results.pdf', dpi=200, bbox_inches='tight')
 
         plt.show()
 
@@ -266,11 +269,15 @@ class db_DMFT():
                     G_imp_rebinned = self.data_entries[sample_num].G_tau.rebinning_tau(new_n_tau=ntau)
 
                     axes[x, y].plot(self.data_entries[sample_num].taumesh, np.real(self.data_entries[sample_num].G0_tau.data.flatten()),'--',color='b', label='NI')
-                    axes[x, y].plot(taumesh, np.real(G_imp_rebinned.data.flatten()),'-',color='b', label='I')
+                    axes[x, y].plot(taumesh, np.real(G_imp_rebinned.data.flatten()),'-',color='orange', label='I')
                     axes[x, y].set_title(f'U={self.params[sample_num]['U']:.2f} beta={self.params[sample_num]['beta']:.2f}')
-
+                    axes[x, y].set_xlim((0, self.data_entries[sample_num].beta))
+                    axes[x, y].xaxis.set_ticklabels([])
+                    axes[x, y].yaxis.set_ticklabels([])
+    
+    
                 elif what== 'BS':
-                    axes[x, y].plot(self.data_entries[sample_num].kpoints, self.data_entries[sample_num].BS,'-',color='b')
+                    axes[x, y].plot(self.data_entries[sample_num].kpoints, self.data_entries[sample_num].BS,'-',color='')
                 axes[x, y].xaxis.set_ticklabels([])
                 axes[x, y].yaxis.set_ticklabels([])
                 if sample_num==0:

@@ -20,6 +20,13 @@ from util import *
 from triqs_maxent import *
 
 
+from triqs_tprf.lattice import lattice_dyson_g_w
+from triqs_tprf.ParameterCollection import ParameterCollection
+from triqs_tprf.ParameterCollection import ParameterCollections
+from triqs_tprf.utilities import BlockGf_data
+
+
+
 class sample():
     def __init__(self, 
                  beta=5.0, 
